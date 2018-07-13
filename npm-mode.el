@@ -38,6 +38,7 @@
 ;; | npm-mode-npm-install-save-dev   | <kbd>S</kbd> | Add new project dev dependency      |
 ;; | npm-mode-npm-uninstall-save     | <kbd>u</kbd> | Remove project dependency           |
 ;; | npm-mode-npm-uninstall-save-dev | <kbd>U</kbd> | Remove project dependency           |
+;; | npm-mode-npm-clean              | <kbd>c</kbd> | Remove node_modules directory       |
 ;; | npm-mode-npm-list               | <kbd>l</kbd> | List installed project dependencies |
 ;; | npm-mode-npm-run                | <kbd>r</kbd> | Run project script                  |
 ;; | npm-mode-visit-project-file     | <kbd>v</kbd> | Visit project package.json file     |
@@ -149,9 +150,19 @@ nil."
    (lambda () (completing-read "Uninstall dependency [dev]: " (npm-mode--get-project-dev-dependencies)))
    "npm uninstall %s --save-dev"))
 
+(defun npm-mode-npm-clean ()
+  "Run the 'npm list' command."
+  (interactive)
+  (let ((dir (concat (file-name-directory (npm-mode--ensure-npm-module)) "node_modules")))
+    (if (file-directory-p dir)
+      (when (yes-or-no-p (format "Are you sure you wish to delete %s" dir))
+        (npm-mode--exec-process (format "rm -rf %s" dir)))
+      (message (format "%s has already been cleaned" dir)))))
+
 (defun npm-mode-npm-list ()
   "Run the 'npm list' command."
   (interactive)
+  (npm-mode--ensure-npm-module)
   (npm-mode--exec-process "npm list --depth=0"))
 
 (defun npm-mode-npm-run ()
@@ -188,7 +199,8 @@ nil."
     (define-key map "s" 'npm-mode-npm-install-save)
     (define-key map "S" 'npm-mode-npm-install-save-dev)
     (define-key map "u" 'npm-mode-npm-uninstall-save)
-    (define-key map "U" 'npm-mode-npm-uninstall-save-dev)    
+    (define-key map "U" 'npm-mode-npm-uninstall-save-dev)
+    (define-key map "c" 'npm-mode-npm-clean)    
     (define-key map "l" 'npm-mode-npm-list)
     (define-key map "r" 'npm-mode-npm-run)
     (define-key map "v" 'npm-mode-visit-project-file)
