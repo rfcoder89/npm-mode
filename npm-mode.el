@@ -41,6 +41,7 @@
 ;; | npm-mode-npm-list               | <kbd>l</kbd> | List installed project dependencies |
 ;; | npm-mode-npm-run                | <kbd>r</kbd> | Run project script                  |
 ;; | npm-mode-visit-project-file     | <kbd>v</kbd> | Visit project package.json file     |
+;; | npm-mode-visit-project-dir      | <kbd>d</kbd> | Visit project directory             |
 ;; |                                 | <kbd>?</kbd> | Display keymap commands             |
 
 ;;; Credit:
@@ -166,6 +167,12 @@ nil."
   (npm-mode--ensure-npm-module)
   (find-file (npm-mode--project-file)))
 
+(defun npm-mode-visit-project-dir ()
+  "Visit the project file."
+  (interactive)
+  (npm-mode--ensure-npm-module)
+  (dired (file-name-directory (npm-mode--project-file))))
+
 (defgroup npm-mode nil
   "Customization group for npm-mode."
   :group 'convenience)
@@ -185,6 +192,7 @@ nil."
     (define-key map "l" 'npm-mode-npm-list)
     (define-key map "r" 'npm-mode-npm-run)
     (define-key map "v" 'npm-mode-visit-project-file)
+    (define-key map "d" 'npm-mode-visit-project-dir)
     map)
   "Keymap for npm-mode commands.")
 
