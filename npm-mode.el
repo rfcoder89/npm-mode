@@ -29,17 +29,18 @@
 ;; a minor mode for convenient interactive use of API with a
 ;; mode-specific command keymap.
 ;;
-;; | command                       | keymap       | description                         |
-;; |-------------------------------|--------------|-------------------------------------|
-;; | npm-mode-npm-init             | <kbd>n</kbd> | Initialize new project              |
-;; | npm-mode-npm-install          | <kbd>i</kbd> | Install all project dependencies    |
-;; | npm-mode-npm-install-save     | <kbd>s</kbd> | Add new project dependency          |
-;; | npm-mode-npm-install-save-dev | <kbd>d</kbd> | Add new project dev dependency      |
-;; | npm-mode-npm-uninstall        | <kbd>u</kbd> | Remove project dependency           |
-;; | npm-mode-npm-list             | <kbd>l</kbd> | List installed project dependencies |
-;; | npm-mode-npm-run              | <kbd>r</kbd> | Run project script                  |
-;; | npm-mode-visit-project-file   | <kbd>v</kbd> | Visit project package.json file     |
-;; |                               | <kbd>?</kbd> | Display keymap commands             |
+;; | command                         | keymap       | description                         |
+;; |---------------------------------|--------------|-------------------------------------|
+;; | npm-mode-npm-init               | <kbd>n</kbd> | Initialize new project              |
+;; | npm-mode-npm-install            | <kbd>i</kbd> | Install all project dependencies    |
+;; | npm-mode-npm-install-save       | <kbd>s</kbd> | Add new project dependency          |
+;; | npm-mode-npm-install-save-dev   | <kbd>S</kbd> | Add new project dev dependency      |
+;; | npm-mode-npm-uninstall-save     | <kbd>u</kbd> | Remove project dependency           |
+;; | npm-mode-npm-uninstall-save-dev | <kbd>U</kbd> | Remove project dependency           |
+;; | npm-mode-npm-list               | <kbd>l</kbd> | List installed project dependencies |
+;; | npm-mode-npm-run                | <kbd>r</kbd> | Run project script                  |
+;; | npm-mode-visit-project-file     | <kbd>v</kbd> | Visit project package.json file     |
+;; |                                 | <kbd>?</kbd> | Display keymap commands             |
 
 ;;; Credit:
 
@@ -86,6 +87,10 @@ nil."
   "Get a list of project dependencies."
   (npm-mode--get-project-property "dependencies"))
 
+(defun npm-mode--get-project-dev-dependencies ()
+  "Get a list of project dev dependencies."
+  (npm-mode--get-project-property "devDependencies"))
+
 (defun npm-mode--exec-process (cmd)
   "Execute a process running CMD."
   (message (concat "Running " cmd))
@@ -108,14 +113,20 @@ nil."
 
 (defun npm-mode-npm-install-save-dev (dep)
   "Run the 'npm install --save-dev' command for DEP."
-  (interactive "sEnter package name: ")
+  (interactive "sEnter package name (dev): ")
   (npm-mode--exec-process (format "npm install %s --save-dev" dep)))
 
-(defun npm-mode-npm-uninstall ()
+(defun npm-mode-npm-uninstall-save ()
   "Run the 'npm uninstall' command."
   (interactive)
   (let ((dep (completing-read "Uninstall dependency: " (npm-mode--get-project-dependencies))))
     (npm-mode--exec-process (format "npm uninstall %s" dep))))
+
+(defun npm-mode-npm-uninstall-save-dev ()
+  "Run the 'npm uninstall --save-dev' command."
+  (interactive)
+  (let ((dep (completing-read "Uninstall dev dependency: " (npm-mode--get-project-dev-dependencies))))
+    (npm-mode--exec-process (format "npm uninstall %s --save-dev" dep))))
 
 (defun npm-mode-npm-list ()
   "Run the 'npm list' command."
@@ -146,8 +157,9 @@ nil."
     (define-key map "n" 'npm-mode-npm-init)
     (define-key map "i" 'npm-mode-npm-install)
     (define-key map "s" 'npm-mode-npm-install-save)
-    (define-key map "d" 'npm-mode-npm-install-save-dev)
-    (define-key map "u" 'npm-mode-npm-uninstall)
+    (define-key map "S" 'npm-mode-npm-install-save-dev)
+    (define-key map "u" 'npm-mode-npm-uninstall-save)
+    (define-key map "U" 'npm-mode-npm-uninstall-save-dev)    
     (define-key map "l" 'npm-mode-npm-list)
     (define-key map "r" 'npm-mode-npm-run)
     (define-key map "v" 'npm-mode-visit-project-file)
