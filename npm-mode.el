@@ -100,7 +100,9 @@ nil."
 (defun npm-mode-npm-init ()
   "Run the npm init command."
   (interactive)
-  (npm-mode--exec-process "npm init"))
+  (if (not (locate-dominating-file default-directory npm-mode--project-file-name))
+      (npm-mode--exec-process "npm init -y")
+    (message "Npm module already initialised")))
 
 (defun npm-mode-npm-install ()
   "Run the 'npm install' command."
