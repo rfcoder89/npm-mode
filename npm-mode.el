@@ -60,6 +60,10 @@
 (defvar npm-mode--modeline-name " npm"
   "Name of npm mode modeline name.")
 
+(defun npm-mode--ensure-npm-module ()
+  "Asserts that you're currently inside an npm module"
+  (npm-mode--project-file))
+
 (defun npm-mode--project-file ()
   "Return path to the project file, or nil.
 If project file exists in the current working directory, or a
@@ -107,29 +111,42 @@ nil."
 (defun npm-mode-npm-install ()
   "Run the 'npm install' command."
   (interactive)
+  (npm-mode--ensure-npm-module)
   (npm-mode--exec-process "npm install"))
 
-(defun npm-mode-npm-install-save (dep)
-  "Run the 'npm install --save' command for DEP."
-  (interactive "sEnter package name: ")
-  (npm-mode--exec-process (format "npm install %s --save" dep)))
+(defun npm-mode--npm-command (input cmd)
+  (when (npm-mode--ensure-npm-module)
+    (npm-mode--exec-process
+     (format
+      cmd
+      (funcall input)))))
 
-(defun npm-mode-npm-install-save-dev (dep)
-  "Run the 'npm install --save-dev' command for DEP."
-  (interactive "sEnter package name (dev): ")
-  (npm-mode--exec-process (format "npm install %s --save-dev" dep)))
+(defun npm-mode-npm-install-save ()
+  "Run the 'npm install --save' command."
+  (interactive)
+  (npm-mode--npm-command
+   (lambda () (read-from-minibuffer "Enter package name: ")) "npm install %s --save"))
+
+(defun npm-mode-npm-install-save-dev ()
+  "Run the 'npm install --save' command."
+  (interactive)
+  (npm-mode--npm-command
+   (lambda () (read-from-minibuffer "Enter package name [dev]: "))
+   "npm install %s --save-dev"))
 
 (defun npm-mode-npm-uninstall-save ()
-  "Run the 'npm uninstall' command."
+  "Run the 'npm uninstall --save' command."
   (interactive)
-  (let ((dep (completing-read "Uninstall dependency: " (npm-mode--get-project-dependencies))))
-    (npm-mode--exec-process (format "npm uninstall %s" dep))))
+  (npm-mode--npm-command
+   (lambda () (completing-read "Uninstall dependency: " (npm-mode--get-project-dependencies)))
+   "npm uninstall %s --save"))
 
 (defun npm-mode-npm-uninstall-save-dev ()
   "Run the 'npm uninstall --save-dev' command."
   (interactive)
-  (let ((dep (completing-read "Uninstall dev dependency: " (npm-mode--get-project-dev-dependencies))))
-    (npm-mode--exec-process (format "npm uninstall %s --save-dev" dep))))
+  (npm-mode--npm-command
+   (lambda () (completing-read "Uninstall dependency [dev]: " (npm-mode--get-project-dev-dependencies)))
+   "npm uninstall %s --save-dev"))
 
 (defun npm-mode-npm-list ()
   "Run the 'npm list' command."
@@ -139,12 +156,14 @@ nil."
 (defun npm-mode-npm-run ()
   "Run the 'npm run' command on a project script."
   (interactive)
-  (let ((script (completing-read "Run script: " (npm-mode--get-project-scripts))))
-    (npm-mode--exec-process (format "npm run %s" script))))
+  (npm-mode--npm-command
+   (lambda () (completing-read "Run script: " (npm-mode--get-project-scripts)))
+   "npm run %s"))
 
 (defun npm-mode-visit-project-file ()
   "Visit the project file."
   (interactive)
+  (npm-mode--ensure-npm-module)
   (find-file (npm-mode--project-file)))
 
 (defgroup npm-mode nil
